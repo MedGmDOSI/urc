@@ -10,7 +10,7 @@ async function handler(request) {
             return unauthorizedResponse();
         }
 
-        const {rowCount, rows} = await sql`select user_id, username, TO_CHAR(last_login, 'DD/MM/YYYY HH24:MI') as last_login from users order by last_login desc`;
+        const {rowCount, rows} = await sql`select user_id, username, TO_CHAR((last_login AT TIME ZONE 'UTC') AT TIME ZONE 'Europe/Paris', 'DD/MM/YYYY HH24:MI') as last_login from users order by users.last_login desc nulls last`;
         console.log("Got " + rowCount + " users");
         if (rowCount === 0) {
             /* Vercel bug doesn't allow 204 response status */
