@@ -1,6 +1,6 @@
 import { Redis } from '@upstash/redis';
-import {getConnecterUser, jsonResponse, unauthorizedResponse} from "../lib/session";
-import {unreadKey} from "../lib/conversation";
+import {getConnecterUser, jsonResponse, unauthorizedResponse} from "../lib/session.js";
+import {unreadKey} from "../lib/conversation.js";
 
 export const config = {
     runtime: 'edge',

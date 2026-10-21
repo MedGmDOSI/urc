@@ -1,6 +1,6 @@
 import { db } from '@vercel/postgres';
-import {arrayBufferToBase64, stringToArrayBuffer} from "../lib/base64";
-import {createSession, jsonResponse} from "../lib/session";
+import {arrayBufferToBase64, stringToArrayBuffer} from "../lib/base64.js";
+import {createSession, jsonResponse} from "../lib/session.js";
 
 export const config = {
     runtime: 'edge',

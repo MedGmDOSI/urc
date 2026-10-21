@@ -1,5 +1,5 @@
 import { sql } from "@vercel/postgres";
-import {getConnecterUser, jsonResponse, unauthorizedResponse} from "../lib/session";
+import {getConnecterUser, jsonResponse, unauthorizedResponse} from "../lib/session.js";
 
 export const config = {
     runtime: 'edge',

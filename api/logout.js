@@ -1,4 +1,4 @@
-import {deleteSession, jsonResponse} from "../lib/session";
+import {deleteSession, jsonResponse} from "../lib/session.js";
 
 export const config = {
     runtime: 'edge',

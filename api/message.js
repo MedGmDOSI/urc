@@ -1,9 +1,9 @@
 import { sql } from "@vercel/postgres";
 import { Redis } from '@upstash/redis';
-import {getConnecterUser, triggerNotConnected} from "../lib/session";
-import {conversationKey, isValidTarget, MESSAGE_TTL, unreadField, unreadKey} from "../lib/conversation";
+import {getConnecterUser, triggerNotConnected} from "../lib/session.js";
+import {conversationKey, isValidTarget, MESSAGE_TTL, unreadField, unreadKey} from "../lib/conversation.js";
 
-const PushNotifications = require("@pusher/push-notifications-server");
+import PushNotifications from "@pusher/push-notifications-server";
 
 const redis = Redis.fromEnv();
 
