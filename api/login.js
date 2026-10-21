@@ -1,12 +1,10 @@
 import { db } from '@vercel/postgres';
-import { Redis } from '@upstash/redis';
 import {arrayBufferToBase64, stringToArrayBuffer} from "../lib/base64";
+import {createSession, jsonResponse} from "../lib/session";
 
 export const config = {
     runtime: 'edge',
 };
-
-const redis = Redis.fromEnv();
 
 export default async function handler(request) {
     try {
@@ -17,30 +15,15 @@ export default async function handler(request) {
         const client = await db.connect();
         const {rowCount, rows} = await client.sql`select * from users where username = ${username} and password = ${hashed64}`;
         if (rowCount !== 1) {
-            const error = {code: "UNAUTHORIZED", message: "Identifiant ou mot de passe incorrect"};
-            return new Response(JSON.stringify(error), {
-                status: 401,
-                headers: {'content-type': 'application/json'},
-            });
-        } else {
-            await client.sql`update users set last_login = now() where user_id = ${rows[0].user_id}`;
-            const token = crypto.randomUUID().toString();
-            const user = {id: rows[0].user_id, username: rows[0].username, email: rows[0].email, externalId: rows[0].external_id}
-            await redis.set(token, user, { ex: 3600 });
-            const userInfo = {};
-            userInfo[user.id] = user;
-            await redis.hset("users", userInfo);
-
-            return new Response(JSON.stringify({token: token, username: username, externalId: rows[0].external_id, id: rows[0].user_id}), {
-                status: 200,
-                headers: {'content-type': 'application/json'},
-            });
+            return jsonResponse({code: "UNAUTHORIZED", message: "Identifiant ou mot de passe incorrect"}, 401);
         }
+        await client.sql`update users set last_login = now() where user_id = ${rows[0].user_id}`;
+        const user = {id: rows[0].user_id, username: rows[0].username, email: rows[0].email, externalId: rows[0].external_id};
+        const token = await createSession(user);
+
+        return jsonResponse({token: token, username: user.username, externalId: user.externalId, id: user.id});
     } catch (error) {
         console.log(error);
-        return new Response(JSON.stringify(error), {
-            status: 500,
-            headers: {'content-type': 'application/json'},
-        });
+        return jsonResponse({code: "SERVER_ERROR", message: String(error)}, 500);
     }
 }
