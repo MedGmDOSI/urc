@@ -1,15 +1,11 @@
 import { put } from '@vercel/blob';
 import {getConnecterUser, jsonResponse, unauthorizedResponse} from "../lib/session.js";
 
-export const config = {
-    runtime: 'edge',
-};
-
 const MAX_SIZE = 4 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/gif", "image/webp"];
 
 // Receives the raw image as body, stores it in Vercel Blob and returns its public URL
-export default async function handler(request) {
+async function handler(request) {
     try {
         const user = await getConnecterUser(request);
         if (!user) {
@@ -41,3 +37,7 @@ export default async function handler(request) {
         return jsonResponse({code: "SERVER_ERROR", message: String(error)}, 500);
     }
 }
+
+// Node.js runtime, Web standard signature (Request -> Response)
+export const GET = handler;
+export const POST = handler;

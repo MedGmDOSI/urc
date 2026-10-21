@@ -35,16 +35,16 @@ Clés Redis :
 
 | Service | Runtime | Rôle |
 |---|---|---|
-| `POST /api/login` | Edge | Connexion, retourne le token de session |
-| `POST /api/register` | Edge | Inscription (contrôles, hash, external_id) puis connexion automatique |
-| `POST /api/logout` | Edge | Supprime la session en cache |
-| `GET /api/users` | Edge | Liste des utilisateurs (données publiques) |
-| `GET/POST /api/rooms` | Edge | Liste / création de salons |
-| `GET /api/messages?type=user\|room&id=X` | Edge | Messages d'une conversation (la marque comme lue) |
-| `POST /api/message` | Serverless | Enregistre un message + notification push aux destinataires |
-| `GET /api/unread` | Edge | Compteurs de non-lus |
-| `POST /api/upload` | Edge | Envoi d'une image (PNG, JPEG, GIF, WEBP — 4 Mo max) |
-| `GET /api/beams` | Serverless | Token Pusher Beams de l'utilisateur |
+| `POST /api/login` | Node.js | Connexion, retourne le token de session |
+| `POST /api/register` | Node.js | Inscription (contrôles, hash, external_id) puis connexion automatique |
+| `POST /api/logout` | Node.js | Supprime la session en cache |
+| `GET /api/users` | Node.js | Liste des utilisateurs (données publiques) |
+| `GET/POST /api/rooms` | Node.js | Liste / création de salons |
+| `GET /api/messages?type=user\|room&id=X` | Node.js | Messages d'une conversation (la marque comme lue) |
+| `POST /api/message` | Node.js | Enregistre un message + notification push aux destinataires |
+| `GET /api/unread` | Node.js | Compteurs de non-lus |
+| `POST /api/upload` | Node.js | Envoi d'une image (PNG, JPEG, GIF, WEBP — 4 Mo max) |
+| `GET /api/beams` | Node.js | Token Pusher Beams de l'utilisateur |
 
 ## Fonctionnalités
 

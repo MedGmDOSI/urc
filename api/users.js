@@ -1,11 +1,7 @@
 import { sql } from "@vercel/postgres";
 import {checkSession, unauthorizedResponse} from "../lib/session.js";
 
-export const config = {
-    runtime: 'edge',
-};
-
-export default async function handler(request) {
+async function handler(request) {
     try {
 
         const connected = await checkSession(request);
@@ -36,3 +32,7 @@ export default async function handler(request) {
         });
     }
 };
+
+// Node.js runtime, Web standard signature (Request -> Response)
+export const GET = handler;
+export const POST = handler;

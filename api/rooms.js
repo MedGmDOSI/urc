@@ -1,10 +1,6 @@
 import { sql } from "@vercel/postgres";
 import {getConnecterUser, jsonResponse, unauthorizedResponse} from "../lib/session.js";
 
-export const config = {
-    runtime: 'edge',
-};
-
 async function listRooms() {
     const {rows} = await sql`select room_id, name, TO_CHAR(created_on, 'DD/MM/YYYY HH24:MI') as created_on from rooms order by name`;
     return jsonResponse(rows);
@@ -25,7 +21,7 @@ async function createRoom(request, user) {
     return jsonResponse(rows[0], 201);
 }
 
-export default async function handler(request) {
+async function handler(request) {
     try {
         const user = await getConnecterUser(request);
         if (!user) {
@@ -40,3 +36,7 @@ export default async function handler(request) {
         return jsonResponse({code: "SERVER_ERROR", message: String(error)}, 500);
     }
 }
+
+// Node.js runtime, Web standard signature (Request -> Response)
+export const GET = handler;
+export const POST = handler;

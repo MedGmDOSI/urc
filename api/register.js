@@ -2,13 +2,9 @@ import { db } from '@vercel/postgres';
 import {arrayBufferToBase64, stringToArrayBuffer} from "../lib/base64.js";
 import {createSession, jsonResponse} from "../lib/session.js";
 
-export const config = {
-    runtime: 'edge',
-};
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default async function handler(request) {
+async function handler(request) {
     try {
         const body = await request.json();
         const username = (body.username || "").trim();
@@ -55,3 +51,7 @@ export default async function handler(request) {
         return jsonResponse({code: "SERVER_ERROR", message: String(error)}, 500);
     }
 }
+
+// Node.js runtime, Web standard signature (Request -> Response)
+export const GET = handler;
+export const POST = handler;

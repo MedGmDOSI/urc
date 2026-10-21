@@ -2,13 +2,9 @@ import { Redis } from '@upstash/redis';
 import {getConnecterUser, jsonResponse, unauthorizedResponse} from "../lib/session.js";
 import {conversationKey, isValidTarget, unreadField, unreadKey} from "../lib/conversation.js";
 
-export const config = {
-    runtime: 'edge',
-};
-
 const redis = Redis.fromEnv();
 
-export default async function handler(request) {
+async function handler(request) {
     try {
         const user = await getConnecterUser(request);
         if (!user) {
@@ -38,3 +34,7 @@ export default async function handler(request) {
         return jsonResponse({code: "SERVER_ERROR", message: String(error)}, 500);
     }
 }
+
+// Node.js runtime, Web standard signature (Request -> Response)
+export const GET = handler;
+export const POST = handler;

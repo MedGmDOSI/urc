@@ -2,11 +2,7 @@ import { db } from '@vercel/postgres';
 import {arrayBufferToBase64, stringToArrayBuffer} from "../lib/base64.js";
 import {createSession, jsonResponse} from "../lib/session.js";
 
-export const config = {
-    runtime: 'edge',
-};
-
-export default async function handler(request) {
+async function handler(request) {
     try {
         const {username, password} = await request.json();
         const hash = await crypto.subtle.digest('SHA-256', stringToArrayBuffer(username + password));
@@ -27,3 +23,7 @@ export default async function handler(request) {
         return jsonResponse({code: "SERVER_ERROR", message: String(error)}, 500);
     }
 }
+
+// Node.js runtime, Web standard signature (Request -> Response)
+export const GET = handler;
+export const POST = handler;
