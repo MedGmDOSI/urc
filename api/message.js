@@ -42,13 +42,13 @@ export default async (request, response) => {
             return;
         }
 
-        const {type, targetId, content, image} = await request.body;
+        const {type, targetId, content, image, audio} = await request.body;
         const text = (content || "").trim();
         if (!isValidTarget(type, targetId)) {
             response.status(400).json({code: "INVALID_TARGET", message: "Destinataire invalide"});
             return;
         }
-        if (!text && !image) {
+        if (!text && !image && !audio) {
             response.status(400).json({code: "EMPTY_MESSAGE", message: "Message vide"});
             return;
         }
@@ -59,6 +59,11 @@ export default async (request, response) => {
         // Only accept images hosted on our Vercel Blob store
         if (image && !/^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i.test(image)) {
             response.status(400).json({code: "INVALID_IMAGE", message: "Image invalide"});
+            return;
+        }
+        // Same rule for voice messages
+        if (audio && !/^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i.test(audio)) {
+            response.status(400).json({code: "INVALID_AUDIO", message: "Message vocal invalide"});
             return;
         }
 
@@ -91,6 +96,7 @@ export default async (request, response) => {
             senderName: user.username,
             content: text,
             image: image || null,
+            audio: audio || null,
             createdAt: new Date().toISOString(),
         };
 
@@ -111,7 +117,7 @@ export default async (request, response) => {
                 recipients.map(recipient => recipient.external_id),
                 {
                     title: roomName ? "#" + roomName + " - " + user.username : user.username,
-                    body: text || "📷 Image",
+                    body: text || (audio ? "🎤 Message vocal" : "📷 Image"),
                     icon: "https://www.univ-brest.fr/themes/custom/ubo_parent/favicon.ico",
                 },
                 {type: type, targetId: type === "user" ? Number(user.id) : Number(targetId), senderId: Number(user.id), path: deepLinkPath},

@@ -18,7 +18,7 @@ interface ChatState {
     fetchUnread: () => Promise<void>;
     select: (conversation: ConversationRef | null) => void;
     fetchMessages: () => Promise<void>;
-    sendMessage: (content: string, image?: string | null) => Promise<void>;
+    sendMessage: (content: string, image?: string | null, audio?: string | null) => Promise<void>;
     createRoom: (name: string) => Promise<Room>;
     updateAvatar: (url: string) => Promise<void>;
     setError: (error: string | null) => void;
@@ -93,14 +93,14 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         }
     },
 
-    sendMessage: async (content, image = null) => {
+    sendMessage: async (content, image = null, audio = null) => {
         const conversation = get().selected;
         if (!conversation) {
             return;
         }
         const message = await apiFetch<Message>("/api/message", {
             method: "POST",
-            body: JSON.stringify({type: conversation.type, targetId: conversation.id, content, image}),
+            body: JSON.stringify({type: conversation.type, targetId: conversation.id, content, image, audio}),
         });
         if (sameConversation(conversation, get().selected)) {
             set({messages: [...get().messages, message]});

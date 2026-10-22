@@ -40,6 +40,7 @@ export interface Message {
     senderName: string;
     content: string;
     image: string | null;
+    audio?: string | null;
     reactions: Record<string, ReactionKey>;
     createdAt: string;
 }

@@ -60,6 +60,10 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
                              sx={{display: "block", maxWidth: "100%", maxHeight: 300, borderRadius: 2, mt: 0.5}}/>
                     </Link>
                 )}
+                {message.audio && (
+                    <Box component="audio" controls preload="metadata" src={message.audio}
+                         sx={{display: "block", width: "100%", minWidth: 220, maxWidth: 280, height: 40, mt: 0.5}}/>
+                )}
                 {message.content && (
                     <Typography variant="body2" sx={{whiteSpace: "pre-wrap", overflowWrap: "anywhere"}}>
                         {message.content}
