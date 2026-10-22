@@ -10,6 +10,8 @@ interface ChatState {
     unread: Record<string, number>;
     selected: ConversationRef | null;
     messages: Message[];
+    /** Message the next sent message answers to */
+    replyingTo: Message | null;
     loadingMessages: boolean;
     error: string | null;
 
@@ -22,6 +24,7 @@ interface ChatState {
     createRoom: (name: string) => Promise<Room>;
     updateAvatar: (url: string) => Promise<void>;
     setError: (error: string | null) => void;
+    setReplyingTo: (message: Message | null) => void;
     reset: () => void;
     toggleReaction: (messageId: string, reaction: ReactionKey, myId: number) => Promise<void>;
 }
@@ -32,6 +35,7 @@ const initialState = {
     unread: {},
     selected: null,
     messages: [],
+    replyingTo: null,
     loadingMessages: false,
     error: null,
 };
@@ -67,7 +71,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         if (sameConversation(conversation, get().selected)) {
             return;
         }
-        set({selected: conversation, messages: [], error: null});
+        set({selected: conversation, messages: [], replyingTo: null, error: null});
         if (conversation) {
             const unread = {...get().unread};
             delete unread[conversationField(conversation)];
@@ -100,11 +104,12 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         }
         const message = await apiFetch<Message>("/api/message", {
             method: "POST",
-            body: JSON.stringify({type: conversation.type, targetId: conversation.id, content, image, audio}),
+            body: JSON.stringify({type: conversation.type, targetId: conversation.id, content, image, audio, replyToId: get().replyingTo?.id}),
         });
         if (sameConversation(conversation, get().selected)) {
             set({messages: [...get().messages, message]});
         }
+        set({replyingTo: null});
     },
 
     createRoom: async (name) => {
@@ -125,6 +130,8 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     },
 
     setError: (error) => set({error}),
+
+    setReplyingTo: (message) => set({replyingTo: message}),
 
     reset: () => set(initialState),
     

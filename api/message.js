@@ -22,7 +22,7 @@ export default async (request, response) => {
             return;
         }
 
-        const {type, targetId, content, image, audio} = await request.body;
+        const {type, targetId, content, image, audio, replyToId} = await request.body;
         const text = (content || "").trim();
         if (!isValidTarget(type, targetId)) {
             response.status(400).json({code: "INVALID_TARGET", message: "Destinataire invalide"});
@@ -70,6 +70,26 @@ export default async (request, response) => {
             return;
         }
 
+        // Reply : the quote is copied from the original message, which must be in this conversation
+        let replyTo = null;
+        if (replyToId) {
+            const raw = await redis.lrange(conversationKey(type, user.id, targetId), 0, -1);
+            const original = raw
+                .map(item => typeof item === "string" ? JSON.parse(item) : item)
+                .find(item => item.id === replyToId);
+            if (!original) {
+                response.status(404).json({code: "REPLY_NOT_FOUND", message: "Le message auquel vous répondez n'existe plus"});
+                return;
+            }
+            replyTo = {
+                id: original.id,
+                senderName: original.senderName,
+                content: String(original.content || "").slice(0, 100),
+                image: !!original.image,
+                audio: !!original.audio,
+            };
+        }
+
         const message = {
             id: crypto.randomUUID().toString(),
             senderId: Number(user.id),
@@ -77,6 +97,7 @@ export default async (request, response) => {
             content: text,
             image: image || null,
             audio: audio || null,
+            replyTo: replyTo,
             createdAt: new Date().toISOString(),
         };
 

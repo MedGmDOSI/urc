@@ -1,11 +1,13 @@
 import {useEffect, useRef, useState} from "react";
 import {Box, CircularProgress, Link, Typography, Chip, Popover, IconButton} from "@mui/material";
 import AddReactionOutlined from "@mui/icons-material/AddReactionOutlined";
+import ReplyIcon from "@mui/icons-material/Reply";
 import {useChatStore} from "../store/chatStore";
 import {useSessionStore} from "../store/sessionStore";
 import type {Message} from "../model/common";
 import {UserAvatar} from "./UserAvatar";
 import {REACTIONS, type ReactionKey} from "./reactions";
+import {replySummary} from "./reply";
 
 const dateFormat = new Intl.DateTimeFormat("fr-FR", {dateStyle: "short", timeStyle: "short"});
 
@@ -19,6 +21,13 @@ function countReactions(reactions: Message["reactions"]) {
 }
 
 
+/** Scrolls to the original message of a reply, and flashes it */
+function scrollToMessage(id: string) {
+    const element = document.getElementById("message-" + id);
+    element?.scrollIntoView({behavior: "smooth", block: "center"});
+    element?.animate([{backgroundColor: "rgba(254, 219, 42, 0.45)"}, {backgroundColor: "transparent"}], {duration: 1500});
+}
+
 function MessageBubble({message, mine, showSender, myId}: { message: Message; mine: boolean; showSender: boolean, myId?: number}) {
     const counts = countReactions(message.reactions ?? {});
     const myReaction = message.reactions?.[String(myId)];
@@ -26,6 +35,7 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
 
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
     const toggleReaction = useChatStore(state => state.toggleReaction);
+    const setReplyingTo = useChatStore(state => state.setReplyingTo);
 
     function pick(key: ReactionKey) {
         setAnchor(null);
@@ -35,7 +45,7 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
     }
 
     return (
-        <Box sx={{display: "flex", flexDirection: mine ? "row-reverse" : "row", alignItems: "flex-end", gap: 1, mb: 1}}>
+        <Box id={"message-" + message.id} sx={{display: "flex", flexDirection: mine ? "row-reverse" : "row", alignItems: "flex-end", gap: 1, mb: 1, borderRadius: 2}}>
             {!mine && (
                 <UserAvatar name={message.senderName} src={senderAvatar}
                             sx={{width: 32, height: 32, fontSize: 13, visibility: showSender ? "visible" : "hidden"}}/>
@@ -54,6 +64,13 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
                 <Typography variant="caption" sx={{display: "block", fontWeight: 600, opacity: 0.85}}>
                     {mine ? "Moi" : message.senderName} · {dateFormat.format(new Date(message.createdAt))}
                 </Typography>
+                {message.replyTo && (
+                    <Box onClick={() => scrollToMessage(message.replyTo!.id)}
+                         sx={{borderLeft: "3px solid currentColor", bgcolor: "action.hover", borderRadius: 1, pl: 1, pr: 1, py: 0.25, mt: 0.5, cursor: "pointer"}}>
+                        <Typography variant="caption" sx={{display: "block", fontWeight: 700}}>{message.replyTo.senderName}</Typography>
+                        <Typography variant="caption" noWrap component="div" sx={{opacity: 0.85}}>{replySummary(message.replyTo)}</Typography>
+                    </Box>
+                )}
                 {message.image && (
                     <Link href={message.image} target="_blank" rel="noopener noreferrer">
                         <Box component="img" src={message.image} alt="Image envoyée" loading="lazy"
@@ -87,8 +104,11 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
             )}
 
             </Box>
-            <IconButton size="small" onClick={event => setAnchor(event.currentTarget)} sx={{alignSelf: "center"}}>
+            <IconButton size="small" onClick={event => setAnchor(event.currentTarget)} sx={{alignSelf: "center"}} aria-label="Réagir">
                 <AddReactionOutlined fontSize="small"/>
+            </IconButton>
+            <IconButton size="small" onClick={() => setReplyingTo(message)} sx={{alignSelf: "center", ml: mine ? 0 : -1, mr: mine ? -1 : 0}} aria-label="Répondre">
+                <ReplyIcon fontSize="small"/>
             </IconButton>
             <Popover open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
                 <Box sx={{display: "flex", p: 0.5}}>

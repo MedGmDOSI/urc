@@ -9,6 +9,7 @@ import StopIcon from "@mui/icons-material/Stop";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import {useChatStore} from "../store/chatStore";
+import {replySummary} from "./reply";
 import {ACCEPTED_AUDIO, ACCEPTED_IMAGES, MAX_IMAGE_SIZE, uploadAudio, uploadImage} from "../api/uploadApi";
 
 const MAX_RECORDING_SECONDS = 120;
@@ -28,6 +29,8 @@ export function MessageInput() {
     const selected = useChatStore(state => state.selected);
     const sendMessage = useChatStore(state => state.sendMessage);
     const setError = useChatStore(state => state.setError);
+    const replyingTo = useChatStore(state => state.replyingTo);
+    const setReplyingTo = useChatStore(state => state.setReplyingTo);
     const [content, setContent] = useState("");
     const [image, setImage] = useState<string | null>(null);
     const [audio, setAudio] = useState<string | null>(null);
@@ -52,6 +55,13 @@ export function MessageInput() {
         textInput.current?.focus();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selected?.type, selected?.id]);
+
+    // Clicking "reply" on a message : ready to type
+    useEffect(() => {
+        if (replyingTo) {
+            textInput.current?.focus();
+        }
+    }, [replyingTo]);
 
     // Leaving the page while recording : stop the microphone
     useEffect(() => cancelRecording, []);
@@ -197,6 +207,17 @@ export function MessageInput() {
 
     return (
         <Box sx={{borderTop: 1, borderColor: "divider", bgcolor: "background.paper", p: 1.5}}>
+            {replyingTo && (
+                <Box sx={{display: "flex", alignItems: "center", gap: 1, mb: 1, pl: 1.5, borderLeft: "3px solid", borderColor: "primary.main"}}>
+                    <Box sx={{flex: 1, minWidth: 0}}>
+                        <Typography variant="caption" sx={{display: "block", fontWeight: 700}}>Réponse à {replyingTo.senderName}</Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap component="div">{replySummary(replyingTo)}</Typography>
+                    </Box>
+                    <IconButton size="small" onClick={() => setReplyingTo(null)} aria-label="Annuler la réponse">
+                        <CloseIcon fontSize="small"/>
+                    </IconButton>
+                </Box>
+            )}
             {(image || uploading) && (
                 <Box sx={{position: "relative", display: "inline-block", mb: 1}}>
                     {uploading

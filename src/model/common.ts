@@ -34,6 +34,15 @@ export interface ConversationRef {
     id: number;
 }
 
+/** Copy of the message a reply is about, see api/message.js */
+export interface ReplyRef {
+    id: string;
+    senderName: string;
+    content: string;
+    image: boolean;
+    audio: boolean;
+}
+
 export interface Message {
     id: string;
     senderId: number;
@@ -41,6 +50,7 @@ export interface Message {
     content: string;
     image: string | null;
     audio?: string | null;
+    replyTo?: ReplyRef | null;
     reactions: Record<string, ReactionKey>;
     createdAt: string;
 }
