@@ -1,13 +1,38 @@
-import {useEffect, useRef} from "react";
-import {Avatar, Box, CircularProgress, Link, Typography} from "@mui/material";
+import {useEffect, useRef, useState} from "react";
+import {Avatar, Box, CircularProgress, Link, Typography, Chip, Popover, IconButton} from "@mui/material";
+import AddReactionOutlined from "@mui/icons-material/AddReactionOutlined";
 import {useChatStore} from "../store/chatStore";
 import {useSessionStore} from "../store/sessionStore";
 import type {Message} from "../model/common";
 import {avatarColor, initials} from "./avatar";
+import {REACTIONS, type ReactionKey} from "./reactions";
 
 const dateFormat = new Intl.DateTimeFormat("fr-FR", {dateStyle: "short", timeStyle: "short"});
 
-function MessageBubble({message, mine, showSender}: { message: Message; mine: boolean; showSender: boolean }) {
+/** a helper function to count reactions */
+function countReactions(reactions: Message["reactions"]) {
+    const counts: Partial<Record<ReactionKey, number>> = {};
+    Object.values(reactions).forEach(key => {
+        counts[key] = (counts[key] ?? 0) + 1;
+    });
+    return counts;
+}
+
+
+function MessageBubble({message, mine, showSender, myId}: { message: Message; mine: boolean; showSender: boolean, myId?: number}) {
+    const counts = countReactions(message.reactions ?? {});
+    const myReaction = message.reactions?.[String(myId)];
+
+    const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+    const toggleReaction = useChatStore(state => state.toggleReaction);
+
+    function pick(key: ReactionKey) {
+        setAnchor(null);
+        if (myId !== undefined) {
+            toggleReaction(message.id, key, myId);
+        }
+    }
+
     return (
         <Box sx={{display: "flex", flexDirection: mine ? "row-reverse" : "row", alignItems: "flex-end", gap: 1, mb: 1}}>
             {!mine && (
@@ -40,8 +65,32 @@ function MessageBubble({message, mine, showSender}: { message: Message; mine: bo
                         {message.content}
                     </Typography>
                 )}
+                {Object.keys(counts).length > 0 && (
+                <Box sx={{display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5}}>
+                    {Object.entries(counts).map(([key, count]) => (
+                        <Chip key={key}
+                            size="small"
+                            label={REACTIONS[key as ReactionKey] + " " + count}
+                            variant={key === myReaction ? "filled" : "outlined"}
+                            color={key === myReaction ? "primary" : "default"}
+                            onClick={() => pick(key as ReactionKey)}
+                        />
+                    ))}
+                </Box>
+            )}
+
             </Box>
-        </Box>
+            <IconButton size="small" onClick={event => setAnchor(event.currentTarget)} sx={{alignSelf: "center"}}>
+                <AddReactionOutlined fontSize="small"/>
+            </IconButton>
+            <Popover open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)}>
+                <Box sx={{display: "flex", p: 0.5}}>
+                    {(Object.keys(REACTIONS) as ReactionKey[]).map(key => (
+                        <IconButton key={key} onClick={() => pick(key)}>{REACTIONS[key]}</IconButton>
+                    ))}
+                </Box>
+            </Popover>
+        </Box> 
     );
 }
 
@@ -71,6 +120,7 @@ export function MessageList() {
                 <MessageBubble key={message.id}
                                message={message}
                                mine={message.senderId === session?.id}
+                               myId={session?.id}
                                showSender={index === messages.length - 1 || messages[index + 1].senderId !== message.senderId}/>
             ))}
             <div ref={bottomRef}/>

@@ -21,7 +21,7 @@ function NewRoomDialog({open, onClose}: { open: boolean; onClose: () => void }) 
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
         const name = new FormData(event.currentTarget).get("name") as string;
         setLoading(true);

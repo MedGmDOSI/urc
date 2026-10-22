@@ -2,6 +2,7 @@ import {create} from "zustand";
 import type {ConversationRef, Message, PublicUser, Room} from "../model/common";
 import {conversationField} from "../model/common";
 import {apiFetch} from "../api/http";
+import type {ReactionKey} from "../messages/reactions";
 
 interface ChatState {
     users: PublicUser[];
@@ -21,6 +22,7 @@ interface ChatState {
     createRoom: (name: string) => Promise<Room>;
     setError: (error: string | null) => void;
     reset: () => void;
+    toggleReaction: (messageId: string, reaction: ReactionKey, myId: number) => Promise<void>;
 }
 
 const initialState = {
@@ -116,4 +118,41 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     setError: (error) => set({error}),
 
     reset: () => set(initialState),
+    
+    toggleReaction: async (messageId, reaction, myId) => {
+    const conversation = get().selected;
+    if (!conversation) {
+        return;
+    }
+    const previous = get().messages;
+
+    // 1. Optimistic update : same rule as the server (same key = remove, otherwise set)
+    set({
+        messages: previous.map(message => {
+            if (message.id !== messageId) {
+                return message;
+            }
+            const reactions = {...message.reactions};
+            if (reactions[myId] === reaction) {
+                delete reactions[myId];
+            } else {
+                reactions[myId] = reaction;
+            }
+            return {...message, reactions};
+        }),
+    });
+
+    // 2. Tell the server, undo on failure
+    try {
+        await apiFetch("/api/reactions", {
+            method: "POST",
+            body: JSON.stringify({type: conversation.type, targetId: conversation.id, messageId, reaction}),
+        });
+    } catch (error) {
+        if (sameConversation(conversation, get().selected)) {
+            set({messages: previous});
+        }
+        get().setError((error as Error).message);
+    }
+},
 }));

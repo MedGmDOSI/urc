@@ -1,4 +1,5 @@
 import {CustomError} from "./CustomError";
+import type {ReactionKey} from "../messages/reactions";
 
 export const AUTHENT_HEADER = "Authorization";
 export const BEARER = "Bearer ";
@@ -38,6 +39,7 @@ export interface Message {
     senderName: string;
     content: string;
     image: string | null;
+    reactions: Record<string, ReactionKey>;
     createdAt: string;
 }
 

@@ -24,6 +24,16 @@ async function handler(request) {
         const messages = raw
             .map(item => typeof item === "string" ? JSON.parse(item) : item)
             .reverse();
+        
+        if (messages.length > 0) {
+            const pipeline = redis.pipeline();
+            messages.forEach(message => pipeline.hgetall("reactions:" + message.id));
+            const results = await pipeline.exec();   // array, same order as the messages
+
+            messages.forEach((message, i) => {
+                message.reactions = results[i] ?? {};
+            });
+        }
 
         // Reading a conversation marks it as read
         await redis.hdel(unreadKey(user.id), unreadField(type, Number(targetId)));

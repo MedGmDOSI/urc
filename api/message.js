@@ -128,7 +128,7 @@ export default async (request, response) => {
             console.log("Push error", pushError);
         }
 
-        response.status(200).json(message);
+        response.status(200).json({...message, reactions: {}});
     } catch (error) {
         console.log(error);
         response.status(500).json({code: "SERVER_ERROR", message: String(error)});
