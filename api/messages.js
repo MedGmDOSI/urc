@@ -23,6 +23,8 @@ async function handler(request) {
         const raw = await redis.lrange(key, 0, -1);
         const messages = raw
             .map(item => typeof item === "string" ? JSON.parse(item) : item)
+            // A real message always has a text, an image or an audio : ignore any other stored entry
+            .filter(item => item.content || item.image || item.audio)
             .reverse();
         
         if (messages.length > 0) {
