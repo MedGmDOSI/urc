@@ -9,12 +9,6 @@ const redis = Redis.fromEnv();
 
 const MAX_CONTENT_LENGTH = 2000;
 
-function getOrigin(request) {
-    const proto = request.headers["x-forwarded-proto"] || "http";
-    const host = request.headers["x-forwarded-host"] || request.headers["host"];
-    return proto + "://" + host;
-}
-
 async function sendPush(externalIds, notification, data) {
     if (!process.env.PUSHER_INSTANCE_ID || !process.env.PUSHER_SECRET_KEY || externalIds.length === 0) {
         console.log("Push notifications not configured, skipping");
@@ -119,9 +113,8 @@ export default async (request, response) => {
                     title: roomName ? "#" + roomName + " - " + user.username : user.username,
                     body: text || "📷 Image",
                     icon: "https://www.univ-brest.fr/themes/custom/ubo_parent/favicon.ico",
-                    deep_link: getOrigin(request) + deepLinkPath,
                 },
-                {type: type, targetId: type === "user" ? Number(user.id) : Number(targetId), senderId: Number(user.id)},
+                {type: type, targetId: type === "user" ? Number(user.id) : Number(targetId), senderId: Number(user.id), path: deepLinkPath},
             );
         } catch (pushError) {
             // The message is saved, a push failure must not fail the request

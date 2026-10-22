@@ -1,5 +1,5 @@
 import {useEffect} from "react";
-import {Navigate, useParams} from "react-router-dom";
+import {Navigate, useNavigate, useParams} from "react-router-dom";
 import {Box, Snackbar, Alert, useMediaQuery, useTheme} from "@mui/material";
 import {useChatStore} from "../store/chatStore";
 import {useSessionStore} from "../store/sessionStore";
@@ -24,6 +24,7 @@ function parseConversation(type?: string, id?: string): ConversationRef | null {
 export function Messenger() {
 
     const {type, id} = useParams();
+    const navigate = useNavigate();
     const session = useSessionStore(state => state.session);
     const selected = useChatStore(state => state.selected);
     const error = useChatStore(state => state.error);
@@ -60,7 +61,12 @@ export function Messenger() {
         };
 
         const sw = navigator.serviceWorker;
+
         const onMessage = (event: MessageEvent) => {
+            if (event.data?.action === "open") {
+                navigate(event.data.path);
+                return;
+            }
             console.log("Got event from sw : " + JSON.stringify(event.data));
             refresh();
         };
