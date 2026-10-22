@@ -117,7 +117,7 @@ export const useChatStore = create<ChatState>()((set, get) => ({
     },
 
     updateAvatar: async (url) => {
-        await apiFetch("/api/avatar", {
+        await apiFetch("/api/users", {
             method: "POST",
             body: JSON.stringify({url}),
         });
