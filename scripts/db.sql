@@ -5,6 +5,7 @@ CREATE TABLE users (
    email VARCHAR ( 255 ) UNIQUE NOT NULL,
    created_on TIMESTAMP NOT NULL,
    last_login TIMESTAMP,
+   avatar_url VARCHAR ( 500 ),
    external_id VARCHAR ( 50 ) UNIQUE NOT NULL
 );
 
@@ -21,3 +22,6 @@ insert into users (username, password, email, created_on, external_id) values ('
 insert into rooms (name, created_on, created_by) values ('General', now(), 1);
 insert into rooms (name, created_on, created_by) values ('News', now(), 1);
 insert into rooms (name, created_on, created_by) values ('Random', now(), 1);
+
+-- Existing database : add the avatar column
+-- ALTER TABLE users ADD COLUMN avatar_url VARCHAR ( 500 );

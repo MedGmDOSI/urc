@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from "react";
+import React, {useMemo, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {
     Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, InputAdornment,
@@ -13,7 +13,8 @@ import {useSessionStore} from "../store/sessionStore";
 import {logoutUser} from "../user/loginApi";
 import type {ConversationRef} from "../model/common";
 import {conversationField} from "../model/common";
-import {avatarColor, initials} from "./avatar";
+import {UserAvatar} from "./UserAvatar";
+import {ACCEPTED_IMAGES, MAX_IMAGE_SIZE, uploadImage} from "../api/uploadApi";
 
 function NewRoomDialog({open, onClose}: { open: boolean; onClose: () => void }) {
     const navigate = useNavigate();
@@ -64,6 +65,11 @@ export function ConversationList() {
     const selected = useChatStore(state => state.selected);
     const [search, setSearch] = useState("");
     const [roomDialog, setRoomDialog] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const fileInput = useRef<HTMLInputElement>(null);
+    const updateAvatar = useChatStore(state => state.updateAvatar);
+    const setError = useChatStore(state => state.setError);
+    const myAvatar = users.find(user => user.user_id === session?.id)?.avatar_url;
 
     const filter = search.trim().toLowerCase();
     // The connected user is not listed
@@ -82,10 +88,35 @@ export function ConversationList() {
         navigate("/login", {replace: true});
     };
 
+    const handleAvatarFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (!file) {
+            return;
+        }
+        if (file.size > MAX_IMAGE_SIZE) {
+            setError("Image trop lourde (4 Mo max)");
+            return;
+        }
+        setUploading(true);
+        try {
+            await updateAvatar(await uploadImage(file));
+        } catch (avatarError) {
+            setError((avatarError as Error).message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
     return (
         <Box sx={{display: "flex", flexDirection: "column", height: "100%"}}>
             <Toolbar sx={{gap: 1.5, bgcolor: "secondary.main", color: "secondary.contrastText"}}>
-                <Avatar sx={{bgcolor: avatarColor(session?.username || "")}}>{initials(session?.username || "?")}</Avatar>
+                <Tooltip title="Changer ma photo">
+                    <IconButton onClick={() => fileInput.current?.click()} disabled={uploading} sx={{p: 0}} aria-label="Changer ma photo">
+                        <UserAvatar name={session?.username || "?"} src={myAvatar} sx={{opacity: uploading ? 0.5 : 1}}/>
+                    </IconButton>
+                </Tooltip>
+                <input ref={fileInput} type="file" accept={ACCEPTED_IMAGES} hidden onChange={handleAvatarFile}/>
                 <Box sx={{flex: 1, minWidth: 0}}>
                     <Typography noWrap sx={{fontWeight: 600}}>{session?.username}</Typography>
                     <Typography variant="caption" sx={{color: "success.dark", fontWeight: 600}}>● En ligne</Typography>
@@ -141,7 +172,7 @@ export function ConversationList() {
                         <ListItemButton key={"user-" + user.user_id} selected={isSelected(conversation)}
                                         onClick={() => navigate("/messages/user/" + user.user_id)}>
                             <ListItemAvatar>
-                                <Avatar sx={{bgcolor: avatarColor(user.username)}}>{initials(user.username)}</Avatar>
+                                <UserAvatar name={user.username} src={user.avatar_url}/>
                             </ListItemAvatar>
                             <ListItemText
                                 primary={user.username}

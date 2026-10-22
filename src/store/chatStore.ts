@@ -20,6 +20,7 @@ interface ChatState {
     fetchMessages: () => Promise<void>;
     sendMessage: (content: string, image?: string | null) => Promise<void>;
     createRoom: (name: string) => Promise<Room>;
+    updateAvatar: (url: string) => Promise<void>;
     setError: (error: string | null) => void;
     reset: () => void;
     toggleReaction: (messageId: string, reaction: ReactionKey, myId: number) => Promise<void>;
@@ -113,6 +114,14 @@ export const useChatStore = create<ChatState>()((set, get) => ({
         });
         set({rooms: [...get().rooms, room].sort((a, b) => a.name.localeCompare(b.name))});
         return room;
+    },
+
+    updateAvatar: async (url) => {
+        await apiFetch("/api/avatar", {
+            method: "POST",
+            body: JSON.stringify({url}),
+        });
+        await get().fetchUsers();
     },
 
     setError: (error) => set({error}),

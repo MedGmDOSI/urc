@@ -1,10 +1,10 @@
 import {useEffect, useRef, useState} from "react";
-import {Avatar, Box, CircularProgress, Link, Typography, Chip, Popover, IconButton} from "@mui/material";
+import {Box, CircularProgress, Link, Typography, Chip, Popover, IconButton} from "@mui/material";
 import AddReactionOutlined from "@mui/icons-material/AddReactionOutlined";
 import {useChatStore} from "../store/chatStore";
 import {useSessionStore} from "../store/sessionStore";
 import type {Message} from "../model/common";
-import {avatarColor, initials} from "./avatar";
+import {UserAvatar} from "./UserAvatar";
 import {REACTIONS, type ReactionKey} from "./reactions";
 
 const dateFormat = new Intl.DateTimeFormat("fr-FR", {dateStyle: "short", timeStyle: "short"});
@@ -22,6 +22,7 @@ function countReactions(reactions: Message["reactions"]) {
 function MessageBubble({message, mine, showSender, myId}: { message: Message; mine: boolean; showSender: boolean, myId?: number}) {
     const counts = countReactions(message.reactions ?? {});
     const myReaction = message.reactions?.[String(myId)];
+    const senderAvatar = useChatStore(state => state.users.find(user => user.user_id === message.senderId)?.avatar_url);
 
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
     const toggleReaction = useChatStore(state => state.toggleReaction);
@@ -36,9 +37,8 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
     return (
         <Box sx={{display: "flex", flexDirection: mine ? "row-reverse" : "row", alignItems: "flex-end", gap: 1, mb: 1}}>
             {!mine && (
-                <Avatar sx={{width: 32, height: 32, fontSize: 13, bgcolor: avatarColor(message.senderName), visibility: showSender ? "visible" : "hidden"}}>
-                    {initials(message.senderName)}
-                </Avatar>
+                <UserAvatar name={message.senderName} src={senderAvatar}
+                            sx={{width: 32, height: 32, fontSize: 13, visibility: showSender ? "visible" : "hidden"}}/>
             )}
             <Box sx={{
                 maxWidth: {xs: "80%", md: "65%"},

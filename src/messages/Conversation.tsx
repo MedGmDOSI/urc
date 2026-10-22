@@ -5,7 +5,7 @@ import TagIcon from "@mui/icons-material/Tag";
 import {useChatStore} from "../store/chatStore";
 import {MessageList} from "./MessageList";
 import {MessageInput} from "./MessageInput";
-import {avatarColor, initials} from "./avatar";
+import {UserAvatar} from "./UserAvatar";
 
 export function Conversation() {
 
@@ -37,7 +37,7 @@ export function Conversation() {
                 )}
                 {isRoom
                     ? <Avatar variant="rounded" sx={{bgcolor: "secondary.main", color: "secondary.contrastText"}}><TagIcon/></Avatar>
-                    : <Avatar sx={{bgcolor: avatarColor(title)}}>{initials(title)}</Avatar>}
+                    : <UserAvatar name={title} src={user?.avatar_url}/>}
                 <Box sx={{minWidth: 0}}>
                     <Typography noWrap sx={{fontWeight: 600}}>{title}</Typography>
                     <Typography variant="caption" color="text.secondary" noWrap component="div">{subtitle}</Typography>

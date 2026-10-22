@@ -17,6 +17,7 @@ export interface User {
 export interface PublicUser {
     user_id: number;
     username: string;
+    avatar_url: string | null;
     last_login: string | null;
 }
 
