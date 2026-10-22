@@ -1,5 +1,5 @@
 import { db } from '@vercel/postgres';
-import {arrayBufferToBase64, stringToArrayBuffer} from "../lib/base64.js";
+import {hashPassword} from "../lib/password.js";
 import {createSession, jsonResponse} from "../lib/session.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,9 +32,7 @@ async function handler(request) {
             return jsonResponse({code: "ALREADY_EXISTS", message: message}, 409);
         }
 
-        // Same convention as login : sha256(username + password), username acting as salt
-        const hash = await crypto.subtle.digest('SHA-256', stringToArrayBuffer(username + password));
-        const hashed64 = arrayBufferToBase64(hash);
+        const hashed64 = await hashPassword(password);
         const externalId = crypto.randomUUID().toString();
 
         const {rows} = await client.sql`insert into users (username, password, email, created_on, last_login, external_id)

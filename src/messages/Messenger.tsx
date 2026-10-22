@@ -3,7 +3,7 @@ import {Navigate, useNavigate, useParams} from "react-router-dom";
 import {Box, Snackbar, Alert, useMediaQuery, useTheme} from "@mui/material";
 import {useChatStore} from "../store/chatStore";
 import {useSessionStore} from "../store/sessionStore";
-import {isPushConfigured, startNotifications} from "../notifications/push";
+import {startNotifications} from "../notifications/push";
 import type {ConversationRef} from "../model/common";
 import {ConversationList} from "./ConversationList";
 import {Conversation} from "./Conversation";
@@ -53,6 +53,9 @@ export function Messenger() {
             startNotifications(session).catch(console.error);
         }
         const refresh = () => {
+            if (document.visibilityState !== "visible") {
+                return;
+            }
             const store = useChatStore.getState();
             store.fetchUnread().catch(console.error);
             if (store.selected) {
@@ -73,15 +76,13 @@ export function Messenger() {
         sw?.addEventListener("message", onMessage);
         window.addEventListener("focus", refresh);
 
-        // Without Pusher configured, fall back on polling
-        const timer = isPushConfigured() ? null : window.setInterval(refresh, POLLING_DELAY);
+        // Push only fires for new messages : polling also brings the reactions of the others
+        const timer = window.setInterval(refresh, POLLING_DELAY);
 
         return () => {
             sw?.removeEventListener("message", onMessage);
             window.removeEventListener("focus", refresh);
-            if (timer) {
-                window.clearInterval(timer);
-            }
+            window.clearInterval(timer);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.token]);
