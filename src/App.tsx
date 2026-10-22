@@ -8,8 +8,22 @@ import {Messenger} from "./messages/Messenger";
 const theme = createTheme({
     cssVariables: true,
     colorSchemes: {
-        light: {palette: {primary: {main: "#0b5cad"}, background: {default: "#f4f7fb"}}},
-        dark: {palette: {primary: {main: "#5aa2ff"}}},
+        // UBO identity : yellow #FEDB2A + black #181518.
+        // Light mode : black is "primary" (readable text/links/buttons), yellow is "secondary" (brand surfaces).
+        // Dark mode : yellow is readable on dark, so it is the primary colour too.
+        light: {
+            palette: {
+                primary: {main: "#181518", contrastText: "#ffffff"},
+                secondary: {main: "#FEDB2A", contrastText: "#181518"},
+                background: {default: "#f7f5ec"},
+            },
+        },
+        dark: {
+            palette: {
+                primary: {main: "#FEDB2A", contrastText: "#181518"},
+                secondary: {main: "#FEDB2A", contrastText: "#181518"},
+            },
+        },
     },
     shape: {borderRadius: 10},
     typography: {fontFamily: "'Roboto', 'Segoe UI', system-ui, sans-serif"},

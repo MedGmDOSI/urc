@@ -47,8 +47,8 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
                 borderRadius: 3,
                 borderBottomRightRadius: mine ? 4 : undefined,
                 borderBottomLeftRadius: mine ? undefined : 4,
-                bgcolor: mine ? "primary.main" : "background.paper",
-                color: mine ? "primary.contrastText" : "text.primary",
+                bgcolor: mine ? "secondary.main" : "background.paper",
+                color: mine ? "secondary.contrastText" : "text.primary",
                 boxShadow: 1,
             }}>
                 <Typography variant="caption" sx={{display: "block", fontWeight: 600, opacity: 0.85}}>
@@ -72,7 +72,10 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
                             size="small"
                             label={REACTIONS[key as ReactionKey] + " " + count}
                             variant={key === myReaction ? "filled" : "outlined"}
-                            color={key === myReaction ? "primary" : "default"}
+                            // Readable on the yellow bubble in both modes : my reaction = black chip, others = outlined
+                            sx={key === myReaction
+                                ? {bgcolor: "#181518", color: "#FEDB2A", "&:hover": {bgcolor: "#181518"}}
+                                : mine ? {color: "inherit", borderColor: "rgba(24, 21, 24, 0.45)"} : undefined}
                             onClick={() => pick(key as ReactionKey)}
                         />
                     ))}

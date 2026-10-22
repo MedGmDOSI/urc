@@ -84,14 +84,14 @@ export function ConversationList() {
 
     return (
         <Box sx={{display: "flex", flexDirection: "column", height: "100%"}}>
-            <Toolbar sx={{gap: 1.5, borderBottom: 1, borderColor: "divider"}}>
+            <Toolbar sx={{gap: 1.5, bgcolor: "secondary.main", color: "secondary.contrastText"}}>
                 <Avatar sx={{bgcolor: avatarColor(session?.username || "")}}>{initials(session?.username || "?")}</Avatar>
                 <Box sx={{flex: 1, minWidth: 0}}>
                     <Typography noWrap sx={{fontWeight: 600}}>{session?.username}</Typography>
-                    <Typography variant="caption" color="success.main">● En ligne</Typography>
+                    <Typography variant="caption" sx={{color: "success.dark", fontWeight: 600}}>● En ligne</Typography>
                 </Box>
                 <Tooltip title="Déconnexion">
-                    <IconButton onClick={handleLogout} aria-label="Déconnexion"><LogoutIcon/></IconButton>
+                    <IconButton color="inherit" onClick={handleLogout} aria-label="Déconnexion"><LogoutIcon/></IconButton>
                 </Tooltip>
             </Toolbar>
 
@@ -121,7 +121,7 @@ export function ConversationList() {
                         <ListItemButton key={"room-" + room.room_id} selected={isSelected(conversation)}
                                         onClick={() => navigate("/messages/room/" + room.room_id)}>
                             <ListItemAvatar>
-                                <Avatar variant="rounded" sx={{bgcolor: "primary.light"}}><TagIcon/></Avatar>
+                                <Avatar variant="rounded" sx={{bgcolor: "secondary.main", color: "secondary.contrastText"}}><TagIcon/></Avatar>
                             </ListItemAvatar>
                             <ListItemText primary={room.name}
                                           slotProps={{primary: {noWrap: true, sx: {fontWeight: count > 0 ? 700 : 400}}}}/>

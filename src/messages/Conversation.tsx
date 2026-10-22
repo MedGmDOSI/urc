@@ -36,7 +36,7 @@ export function Conversation() {
                     </IconButton>
                 )}
                 {isRoom
-                    ? <Avatar variant="rounded" sx={{bgcolor: "primary.light"}}><TagIcon/></Avatar>
+                    ? <Avatar variant="rounded" sx={{bgcolor: "secondary.main", color: "secondary.contrastText"}}><TagIcon/></Avatar>
                     : <Avatar sx={{bgcolor: avatarColor(title)}}>{initials(title)}</Avatar>}
                 <Box sx={{minWidth: 0}}>
                     <Typography noWrap sx={{fontWeight: 600}}>{title}</Typography>
