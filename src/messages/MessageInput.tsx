@@ -4,11 +4,12 @@ import SendIcon from "@mui/icons-material/Send";
 import ImageIcon from "@mui/icons-material/Image";
 import CloseIcon from "@mui/icons-material/Close";
 import MicIcon from "@mui/icons-material/Mic";
+import AudioFileIcon from "@mui/icons-material/AudioFile";
 import StopIcon from "@mui/icons-material/Stop";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import {useChatStore} from "../store/chatStore";
-import {ACCEPTED_IMAGES, MAX_IMAGE_SIZE, uploadAudio, uploadImage} from "../api/uploadApi";
+import {ACCEPTED_AUDIO, ACCEPTED_IMAGES, MAX_IMAGE_SIZE, uploadAudio, uploadImage} from "../api/uploadApi";
 
 const MAX_RECORDING_SECONDS = 120;
 
@@ -39,6 +40,7 @@ export function MessageInput() {
     const [uploading, setUploading] = useState(false);
     const [sending, setSending] = useState(false);
     const fileInput = useRef<HTMLInputElement>(null);
+    const audioInput = useRef<HTMLInputElement>(null);
     const textInput = useRef<HTMLInputElement>(null);
 
     // New conversation : clear the draft
@@ -125,6 +127,26 @@ export function MessageInput() {
         cancelled.current = true;
         stopRecording();
     }
+
+    const handleAudioFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (!file) {
+            return;
+        }
+        if (file.size > MAX_IMAGE_SIZE) {
+            setError("Fichier audio trop lourd (4 Mo max)");
+            return;
+        }
+        setUploading(true);
+        try {
+            setAudio(await uploadAudio(file));
+        } catch (uploadError) {
+            setError((uploadError as Error).message);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -215,6 +237,14 @@ export function MessageInput() {
                     <span>
                         <IconButton onClick={() => fileInput.current?.click()} disabled={uploading} aria-label="Envoyer une image">
                             <ImageIcon/>
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <input ref={audioInput} type="file" accept={ACCEPTED_AUDIO} hidden onChange={handleAudioFile}/>
+                <Tooltip title="Envoyer un fichier audio">
+                    <span>
+                        <IconButton onClick={() => audioInput.current?.click()} disabled={uploading || sending} aria-label="Envoyer un fichier audio">
+                            <AudioFileIcon/>
                         </IconButton>
                     </span>
                 </Tooltip>
