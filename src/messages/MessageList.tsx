@@ -8,6 +8,7 @@ import type {Message} from "../model/common";
 import {UserAvatar} from "./UserAvatar";
 import {REACTIONS, type ReactionKey} from "./reactions";
 import {replySummary} from "./reply";
+import {Linkify} from "./Linkify";
 
 const dateFormat = new Intl.DateTimeFormat("fr-FR", {dateStyle: "short", timeStyle: "short"});
 
@@ -83,7 +84,7 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
                 )}
                 {message.content && (
                     <Typography variant="body2" sx={{whiteSpace: "pre-wrap", overflowWrap: "anywhere"}}>
-                        {message.content}
+                        <Linkify text={message.content}/>
                     </Typography>
                 )}
                 {Object.keys(counts).length > 0 && (
