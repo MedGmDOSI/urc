@@ -110,7 +110,7 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
                             // the others' reactions on my (yellow) bubble = darker yellow chip
                             sx={key === myReaction
                                 ? {bgcolor: "#181518", color: "#FEDB2A", "&:hover": {bgcolor: "#181518"}}
-                                : mine ? {bgcolor: "#E0B400", color: "#181518", border: "1px solid #B38F00", "&:hover": {bgcolor: "#CFA500"}} : undefined}
+                                : mine ? {bgcolor: "#FFFFFF", color: "#181518", border: "1px solid #B38F00", "&:hover": {bgcolor: "#CFA500"}} : undefined}
                             onClick={() => pick(key as ReactionKey)}
                         />
                         </Tooltip>
