@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {Box, CircularProgress, Link, Typography, Chip, Popover, IconButton} from "@mui/material";
+import {Box, CircularProgress, Link, Typography, Chip, Popover, IconButton, Tooltip} from "@mui/material";
 import AddReactionOutlined from "@mui/icons-material/AddReactionOutlined";
 import ReplyIcon from "@mui/icons-material/Reply";
 import {useChatStore} from "../store/chatStore";
@@ -32,11 +32,22 @@ function scrollToMessage(id: string) {
 function MessageBubble({message, mine, showSender, myId}: { message: Message; mine: boolean; showSender: boolean, myId?: number}) {
     const counts = countReactions(message.reactions ?? {});
     const myReaction = message.reactions?.[String(myId)];
+    const users = useChatStore(state => state.users);
     const senderAvatar = useChatStore(state => state.users.find(user => user.user_id === message.senderId)?.avatar_url);
 
     const [anchor, setAnchor] = useState<HTMLElement | null>(null);
     const toggleReaction = useChatStore(state => state.toggleReaction);
     const setReplyingTo = useChatStore(state => state.setReplyingTo);
+
+    /** Who reacted with this emoji : "Vous, Alice, Bob" */
+    function reactorNames(key: string): string {
+        return Object.entries(message.reactions ?? {})
+            .filter(([, reaction]) => reaction === key)
+            .map(([userId]) => Number(userId) === myId
+                ? "Vous"
+                : (users.find(user => user.user_id === Number(userId))?.username ?? "Utilisateur"))
+            .join(", ");
+    }
 
     function pick(key: ReactionKey) {
         setAnchor(null);
@@ -90,16 +101,19 @@ function MessageBubble({message, mine, showSender, myId}: { message: Message; mi
                 {Object.keys(counts).length > 0 && (
                 <Box sx={{display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5}}>
                     {Object.entries(counts).map(([key, count]) => (
-                        <Chip key={key}
+                        <Tooltip key={key} title={reactorNames(key)} arrow slotProps={{tooltip: {sx: {fontSize: 11}}}}>
+                        <Chip
                             size="small"
                             label={REACTIONS[key as ReactionKey] + " " + count}
-                            variant={key === myReaction ? "filled" : "outlined"}
-                            // Readable on the yellow bubble in both modes : my reaction = black chip, others = outlined
+                            variant={key === myReaction || mine ? "filled" : "outlined"}
+                            // Readable on the yellow bubble in both modes : my reaction = black chip,
+                            // the others' reactions on my (yellow) bubble = darker yellow chip
                             sx={key === myReaction
                                 ? {bgcolor: "#181518", color: "#FEDB2A", "&:hover": {bgcolor: "#181518"}}
-                                : mine ? {color: "inherit", borderColor: "rgba(24, 21, 24, 0.45)"} : undefined}
+                                : mine ? {bgcolor: "#E0B400", color: "#181518", border: "1px solid #B38F00", "&:hover": {bgcolor: "#CFA500"}} : undefined}
                             onClick={() => pick(key as ReactionKey)}
                         />
+                        </Tooltip>
                     ))}
                 </Box>
             )}
